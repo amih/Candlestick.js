@@ -1,12 +1,17 @@
 // each indicator needs to have a unique name in the indicators object
 // the value is an array of the parameters used to define the indicaotr
 $(function() {
-  var indicators = {
-    sma7 : ['SMA', 'c',  7]
-  , sma40: ['SMA', 'c', 40]
-  , sma45: ['SMA', 'c', 45]
+  var options = {
+    title: 'AAPL weekly'
+    , indicators : [
+      ['EMA', 'c',  7]
+      , ['SMA', 'c',  7]
+      , ['EMA', 'c', 45]
+      , ['SMA', 'c', 45]
+      , ['MACD', 12, 26, 9]
+    ]
   };
   $.get("AAPL.weekly.txt",function(data) {
-    Candlestick("myChart",data, indicators);
+    Candlestick("myChart",data, options);
   });
 });

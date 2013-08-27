@@ -20,6 +20,7 @@ Roadmap:
  - [ ] add more indicators to top of the screen - bollinger bands, keltner bands, EMA, ...
  - [ ] add bottom indicators - MACD, Volume, ...
  - [ ] cache data using indexedDB
+ - [ ] add labels for each top indicator, SMA(C,20) + line color
 
  Demo explanation
  ================

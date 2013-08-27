@@ -3,7 +3,7 @@
  * Copyright 2013 Ami Heines
  * Released under the WTFPL license
  */
-window.Candlestick = function(canvasID, rawData, indicators){
+window.Candlestick = function(canvasID, rawData, options){
 	var chart = this;
   var context = document.getElementById(canvasID).getContext("2d");
 	var width = context.canvas.width;
@@ -27,7 +27,7 @@ window.Candlestick = function(canvasID, rawData, indicators){
     , v = oCandle.v;
   var pixelsPerCandle = 4
     , marginTop = 20
-    , marginBottom = 50
+    , marginBottom = 200
     , marginLeft = 10
     , marginRight = 23;
   var hh = Max(h.slice(0,Math.min(h.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in candles that will be drawn and add margin
@@ -50,15 +50,25 @@ window.Candlestick = function(canvasID, rawData, indicators){
   hh = step * Math.ceil(hh/step);
   ///////////////////////////////////////////////////////
   // calculate the indicators
-  // currently only SMA// and EMA
+  // currently only SMA and EMA
   //console.log('indicators');
   //console.log(indicators);
-  var sma = new Array();
-  for (var key in indicators){
-    var indicator = indicators[key];
+  var upperIndicators = new Array();
+  for (var key in options.indicators){
+    var indicator = options.indicators[key];
     console.log(indicator);
     if (indicator[0]=='SMA'){
-      sma.push( SMA(oCandle[indicator[1]], indicator[2]) );
+      upperIndicators.push({
+        arr: SMA(oCandle[indicator[1]], indicator[2])
+        , label: 'SMA('+indicator[1]+','+indicator[2]+')'
+      });
+    }else if (indicator[0]=='EMA'){
+      upperIndicators.push({
+        arr: EMA(oCandle[indicator[1]], indicator[2])
+        , label: 'EMA('+indicator[1]+','+indicator[2]+')'
+      });
+    }else if (indicator[0]=='MACD'){
+      console.log('NIY MACD');
     }
   }
   ///////////////////////////////////////////////////////
@@ -97,19 +107,29 @@ window.Candlestick = function(canvasID, rawData, indicators){
   }
   context.strokeStyle = 'rgb(200,200,150)';
   context.stroke();
-  // the SMA array
-  for (var j=0; j<sma.length; j++){
-    var yPrev = scale(ll,hh,height, marginTop, marginBottom, sma[j][0])
+  // the SMA and EMA arrays
+  var leftPos = marginLeft+5;
+  context.fillStyle = 'black';
+  context.fillText(options.title, leftPos, marginTop + 5);
+  var metrics = context.measureText(options.title);
+  leftPos += metrics.width + 5;
+  for (var j=0; j<upperIndicators.length; j++){
+    var upperIndicator = upperIndicators[j];
+    var yPrev = scale(ll,hh,height, marginTop, marginBottom, upperIndicator.arr[0])
         , x0  = (width-marginRight) - pixelsPerCandle;
-    context.beginPath();// the sma line
+    context.beginPath();// the upperIndicators line
     context.moveTo(x0 + 1, yPrev);
     for (var i=1; i<c.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
-      var yCurr = scale(ll,hh,height, marginTop,marginBottom, sma[j][i]);
+      var yCurr = scale(ll,hh,height, marginTop,marginBottom, upperIndicator.arr[i]);
       x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
       context.lineTo(x0 + 1, yCurr);
     }
     context.strokeStyle = getColor(j);
+    context.fillStyle = getColor(j);
+    context.fillText(upperIndicator.label, leftPos, marginTop + 5);
     context.stroke();
+    var metrics = context.measureText(upperIndicator.label);
+    leftPos += metrics.width + 5;
   }
   // the candles themselves
   for (var i=0; i<c.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
@@ -181,6 +201,21 @@ window.Candlestick = function(canvasID, rawData, indicators){
     sma.reverse();// reverse back for main consumption
     array.reverse();// reverse back
     return sma;
+  }
+  function EMA( array, emaLength ){
+    array.reverse(); // easier on my limited brain to think of the array in the "proper" order
+    var ema = new Array();
+    var k = 2/(emaLength+1);
+    for (var i=0; i<emaLength-1; i++){
+      ema[i] = NaN;
+    }
+    ema[emaLength-1] = array.slice(0,emaLength).reduce(function(a, b) { return a + b }) / emaLength;
+    for(var i=emaLength; i<array.length; i++){
+      ema[i] = array[i]*k + ema[i-1]*(1-k);
+    }
+    ema.reverse();// reverse back for main consumption
+    array.reverse();// reverse back
+    return ema;
   }
   function getColor(j){
     var colors = ['coral','crimson','darkblue','chocolate','chartreuse','blueviolet','darksalmon'];
