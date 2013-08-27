@@ -1,11 +1,12 @@
-<html>
-<head>
-<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-<script src="Candlestick.js"></script>
-<script src="index.js"></script>
-</head>
-<body>
-hello world, ami-chart.js here
-<canvas id="myChart" width="660" height="400"></canvas>
-</body>
-</html>
+// each indicator needs to have a unique name in the indicators object
+// the value is an array of the parameters used to define the indicaotr
+$(function() {
+  var indicators = {
+    sma7 : ['SMA', 'c',  7]
+  , sma40: ['SMA', 'c', 40]
+  , sma45: ['SMA', 'c', 45]
+  };
+  $.get("AAPL.weekly.txt",function(data) {
+    Candlestick("myChart",data, indicators);
+  });
+});
