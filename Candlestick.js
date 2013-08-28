@@ -67,7 +67,7 @@ window.Candlestick = function(canvasID, rawData, options){
   var lowerIndicator = {};
   for (var key in options.indicators){
     var indicator = options.indicators[key];
-    console.log(indicator);
+    //console.log(indicator);
     if (indicator[0]=='SMA'){
       upperIndicators.push({
         arr: SMA(oCandle[indicator[1]], indicator[2])
@@ -79,7 +79,6 @@ window.Candlestick = function(canvasID, rawData, options){
         , label: 'EMA('+indicator[1]+','+indicator[2]+')'
       });
     }else if (indicator[0]=='MACD'){
-      console.log('NIY MACD');
       lowerIndicator.label = 'MACD({0},{1},{2})'.format(indicator[1], indicator[2], indicator[3]);
       lowerIndicator.macd  = MACD(oCandle.c, indicator[1], indicator[2], indicator[3]);
       console.log(lowerIndicator);
@@ -88,7 +87,6 @@ window.Candlestick = function(canvasID, rawData, options){
   ///////////////////////////////////////////////////////
   context.fillStyle = "rgb(250,250,200)";//pale yellow
   context.fillRect  (marginLeft,marginTop,width-marginLeft-marginRight,height-marginTop-marginBottom);
-  //context.strokeRect(marginLeft,marginTop,width-marginLeft-marginRight,height-marginTop-marginBottom);
   context.strokeRect(0,0,width-1,height-1);// just for fun, frame the whole canvas
   // Y coordinate - prices ticks
   for (var i=ll; i<=hh; i+=step){
@@ -121,7 +119,7 @@ window.Candlestick = function(canvasID, rawData, options){
   }
   context.strokeStyle = 'rgb(200,200,150)';
   context.stroke();
-  // the SMA and EMA arrays
+  // draw the upperIndicators, SMA and EMA arrays
   var leftPos = marginLeft+5;
   context.fillStyle = 'black';
   context.fillText(options.title, leftPos, marginTop + 5);
@@ -145,6 +143,31 @@ window.Candlestick = function(canvasID, rawData, options){
     var metrics = context.measureText(upperIndicator.label);
     leftPos += metrics.width + 5;
   }
+  // draw the lowerIndocator, MACD
+  // draw the background of the MACD chart
+  context.fillStyle = "rgba(200,250,200, .5)";
+  var liMarginTop = height-marginBottom+10;// li===LowerIndicator
+  var liMarginBottom = 10;
+  context.fillRect  (marginLeft, liMarginTop, width-marginLeft-marginRight, marginBottom-20);
+  // find out the highest high and lowest low of the MACD sub chart
+  var macd = lowerIndicator.macd.macd;
+  var lihh = Max(macd.slice(0,Math.min(macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
+  var lill = Min(macd.slice(0,Math.min(macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
+  var yPrev = scale(lill,lihh,height, liMarginTop, liMarginBottom, macd[0])//amihdebug
+      , x0  = (width-marginRight) - pixelsPerCandle;
+  context.beginPath();// the upperIndicators line
+  context.moveTo(x0 + 1, yPrev);
+  for (var i=1; i<macd.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
+    var yCurr = scale(lill,lihh,height, liMarginTop,liMarginBottom, macd[i]);
+    x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
+    context.lineTo(x0 + 1, yCurr);
+  }
+  context.strokeStyle = 'red';
+  context.fillStyle = 'red';
+  leftPos = marginLeft+5;
+  context.fillText(lowerIndicator.label, leftPos, liMarginTop + 5);
+  context.stroke();
+  // END OF draw the lowerIndocator, MACD
   // the candles themselves
   for (var i=0; i<c.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
     var yo = scale(ll,hh,height, marginTop,marginBottom, o[i])

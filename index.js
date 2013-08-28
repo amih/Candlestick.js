@@ -4,10 +4,8 @@ $(function() {
   var options = {
     title: 'AAPL weekly'
     , indicators : [
-      ['EMA', 'c',  7]
-      , ['SMA', 'c',  7]
-      , ['EMA', 'c', 45]
-      , ['SMA', 'c', 45]
+        ['EMA', 'c', 26]
+      , ['EMA', 'c', 12]
       , ['MACD', 12, 26, 9]
     ]
   };
