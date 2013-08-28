@@ -4,6 +4,16 @@
  * Released under the WTFPL license
  */
 window.Candlestick = function(canvasID, rawData, options){
+  // add format to strings -- from http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
+  if (!String.prototype.format) {
+    String.prototype.format = function() {
+      var args = arguments;
+      return this.replace(/{(\d+)}/g, function(match, number) { 
+        return typeof args[number] != 'undefined' ? args[number] : match;
+      });
+    };
+  }
+  // end of add format to string, test with: "{0} is dead, but {1} is alive! {0} {2}".format("ASP", "ASP.NET")
 	var chart = this;
   var context = document.getElementById(canvasID).getContext("2d");
 	var width = context.canvas.width;
@@ -54,6 +64,7 @@ window.Candlestick = function(canvasID, rawData, options){
   //console.log('indicators');
   //console.log(indicators);
   var upperIndicators = new Array();
+  var lowerIndicator = {};
   for (var key in options.indicators){
     var indicator = options.indicators[key];
     console.log(indicator);
@@ -69,6 +80,9 @@ window.Candlestick = function(canvasID, rawData, options){
       });
     }else if (indicator[0]=='MACD'){
       console.log('NIY MACD');
+      lowerIndicator.label = 'MACD({0},{1},{2})'.format(indicator[1], indicator[2], indicator[3]);
+      lowerIndicator.macd  = MACD(oCandle.c, indicator[1], indicator[2], indicator[3]);
+      console.log(lowerIndicator);
     }
   }
   ///////////////////////////////////////////////////////
@@ -202,8 +216,12 @@ window.Candlestick = function(canvasID, rawData, options){
     array.reverse();// reverse back
     return sma;
   }
-  function EMA( array, emaLength ){
-    array.reverse(); // easier on my limited brain to think of the array in the "proper" order
+  function EMA( originalArray, emaLength ){
+    var array = originalArray.slice().reverse(); // easier on my limited brain to think of the array in the "proper" order
+    // trim initial NaN values
+    var iPos = 0;
+    for(iPos=0; iPos<array.length && isNaN(array[iPos]); iPos++) {}
+    array = array.slice(iPos);// trim initial NaN values from array
     var ema = new Array();
     var k = 2/(emaLength+1);
     for (var i=0; i<emaLength-1; i++){
@@ -214,11 +232,23 @@ window.Candlestick = function(canvasID, rawData, options){
       ema[i] = array[i]*k + ema[i-1]*(1-k);
     }
     ema.reverse();// reverse back for main consumption
-    array.reverse();// reverse back
+    for (var i=0; i<iPos; i++){
+      ema.push(NaN);
+    }
     return ema;
+  }
+  function MACD(array, i12, i26, i9){
+    var ema12 = EMA(oCandle.c, i12);
+    var ema26 = EMA(oCandle.c, i26);
+    var macd = [];
+    for(var i=0; i<ema12.length; i++){ macd.push(ema12[i]-ema26[i]); }
+    var signal = EMA(macd, i9);
+    var histogram = [];
+    for(var i=0; i<macd.length;  i++){ histogram.push(macd[i]-signal[i]); }
+    return { macd: macd, signal: signal, histogram: histogram };
   }
   function getColor(j){
     var colors = ['coral','crimson','darkblue','chocolate','chartreuse','blueviolet','darksalmon'];
     return colors[j % colors.length];
   }
-}
+ }

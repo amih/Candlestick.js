@@ -20,12 +20,14 @@ Roadmap:
  - [ ] add more indicators to top of the screen - bollinger bands, keltner bands, EMA, ...
  - [ ] add bottom indicators - MACD, Volume, ...
  - [ ] cache data using indexedDB
- - [ ] add labels for each top indicator, SMA(C,20) + line color
+ - [x] add labels for each top indicator, SMA(C,20) + line color
+ - [ ] interactivity - allow scrolling by dragging sideways
 
  Demo explanation
  ================
 
 The index.html file is really short, it contains in the HEAD section 3 javascript files,
+
 1. jQuery from a CDN
 2. the Candlestick.js file which is the main file for this project
 3. the demo index.js file
@@ -36,11 +38,11 @@ The index.js file has one jQuery function which onLoad sets the indicators objec
 when the get returns with data it calls the main function:
 
 ```
-Candlestick(canvasID, data, indicators);
+Candlestick(canvasID, data, options);
 ```
 the parameters:
-- canvasID:   the canvas ID in the html DOM
-- data:       the data in the finance.yahoo.com format, e.g. http://ichart.finance.yahoo.com/table.csv?s=AAPL&a=04&b=7&c=2013&d=07&e=27&f=2013&g=w&ignore=.csv
-- indicators: the indicators object.
+- canvasID: the canvas ID in the html DOM
+- data    : the data in the finance.yahoo.com format, e.g. http://ichart.finance.yahoo.com/table.csv?s=AAPL&a=04&b=7&c=2013&d=07&e=27&f=2013&g=w&ignore=.csv
+- options : an object with a title element and an indicators sub-object.
 
 
