@@ -1,7 +1,7 @@
 /*!
  * CandleStickChart.js
  * Copyright 2013 Ami Heines
- * Released under the WTFPL license
+ * Released under the MIT license
  */
 window.Candlestick = function(canvasID, rawData, options){
   // add format to strings -- from http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
@@ -81,13 +81,15 @@ window.Candlestick = function(canvasID, rawData, options){
     }else if (indicator[0]=='MACD'){
       lowerIndicator.label = 'MACD({0},{1},{2})'.format(indicator[1], indicator[2], indicator[3]);
       lowerIndicator.macd  = MACD(oCandle.c, indicator[1], indicator[2], indicator[3]);
-      console.log(lowerIndicator);
+      //console.log(lowerIndicator);
     }
   }
   ///////////////////////////////////////////////////////
+  context.fillStyle = "rgb(240,240,220)";//pale yellow
+  context.fillRect(0,0,width-1,height-1);
   context.fillStyle = "rgb(250,250,200)";//pale yellow
   context.fillRect  (marginLeft,marginTop,width-marginLeft-marginRight,height-marginTop-marginBottom);
-  context.strokeRect(0,0,width-1,height-1);// just for fun, frame the whole canvas
+  //context.strokeRect(0,0,width-1,height-1);// just for fun, frame the whole canvas
   // Y coordinate - prices ticks
   for (var i=ll; i<=hh; i+=step){
     var y0 = scale(ll,hh,height,marginTop,marginBottom, i);
