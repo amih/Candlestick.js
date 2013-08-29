@@ -1,12 +1,16 @@
 .history ul {
   margin-top: 4px;
   margin-bottom: 4px;
-  padding-left: 10px;
+  padding-left: 4px;
 }
 .history li {
   display: inline;
   list-style-type: none;
-  padding-right: 10px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: lightblue;
+  margin: 1px;
+  border-radius: 3px;
 }
 /* http://www.cssbuttongenerator.com/  */
 .button {

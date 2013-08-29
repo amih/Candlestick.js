@@ -25,7 +25,7 @@ var refreshChart = function(selector){
     title: ticker+' weekly'
     , indicators : [
         ['EMA', 'c', 26]
-      , ['EMA', 'c', 12]
+      , ['SMA', 'c', 200]
       , ['MACD', 12, 26, 9]
     ]
   };

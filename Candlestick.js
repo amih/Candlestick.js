@@ -36,9 +36,9 @@ window.Candlestick = function(canvasID, rawData, options){
     , c = oCandle.c
     , v = oCandle.v;
   var pixelsPerCandle = 4
-    , marginTop = 20
+    , marginTop = 8
     , marginBottom = 200
-    , marginLeft = 10
+    , marginLeft = 5
     , marginRight = 23;
   var hh = Max(h.slice(0,Math.min(h.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in candles that will be drawn and add margin
   var ll = Min(l.slice(0,Math.min(l.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
@@ -124,7 +124,8 @@ window.Candlestick = function(canvasID, rawData, options){
   // draw the upperIndicators, SMA and EMA arrays
   var leftPos = marginLeft+5;
   context.fillStyle = 'black';
-  context.fillText(options.title, leftPos, marginTop + 5);
+  context.font = "bold 16px sans-serif";
+  context.fillText(options.title, leftPos, marginTop + 1);
   var metrics = context.measureText(options.title);
   leftPos += metrics.width + 5;
   for (var j=0; j<upperIndicators.length; j++){
@@ -140,34 +141,67 @@ window.Candlestick = function(canvasID, rawData, options){
     }
     context.strokeStyle = getColor(j);
     context.fillStyle = getColor(j);
-    context.fillText(upperIndicator.label, leftPos, marginTop + 5);
+    context.fillText(upperIndicator.label, leftPos, marginTop + 1);
     context.stroke();
     var metrics = context.measureText(upperIndicator.label);
     leftPos += metrics.width + 5;
   }
   // draw the lowerIndocator, MACD
+  context.font = "bold 12px sans-serif";
   // draw the background of the MACD chart
   context.fillStyle = "rgba(200,250,200, .5)";
   var liMarginTop = height-marginBottom+10;// li===LowerIndicator
   var liMarginBottom = 10;
   context.fillRect  (marginLeft, liMarginTop, width-marginLeft-marginRight, marginBottom-20);
   // find out the highest high and lowest low of the MACD sub chart
-  var macd = lowerIndicator.macd.macd;
-  var lihh = Max(macd.slice(0,Math.min(macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
-  var lill = Min(macd.slice(0,Math.min(macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
-  var yPrev = scale(lill,lihh,height, liMarginTop, liMarginBottom, macd[0])//amihdebug
+  var li = lowerIndicator.macd;
+  var lihh = Max(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
+  var lill = Min(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
+  // the MACD line
+  var yPrev = scale(lill,lihh,height, liMarginTop, liMarginBottom, li.macd[0])
       , x0  = (width-marginRight) - pixelsPerCandle;
-  context.beginPath();// the upperIndicators line
+  context.beginPath();
   context.moveTo(x0 + 1, yPrev);
-  for (var i=1; i<macd.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
-    var yCurr = scale(lill,lihh,height, liMarginTop,liMarginBottom, macd[i]);
+  for (var i=1; i<li.macd.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
+    var yCurr = scale(lill,lihh,height, liMarginTop,liMarginBottom, li.macd[i]);
+    x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
+    context.lineTo(x0 + 1, yCurr);
+  }
+  context.strokeStyle = 'blue';
+  context.fillStyle = 'blue';
+  leftPos = marginLeft+5;
+  context.fillText(lowerIndicator.label, leftPos, liMarginTop + 5);
+  metrics = context.measureText(lowerIndicator.label);
+  leftPos += metrics.width + 5;
+  context.stroke();
+  // the signal line
+  var yPrev = scale(lill,lihh,height, liMarginTop, liMarginBottom, li.signal[0])
+      , x0  = (width-marginRight) - pixelsPerCandle;
+  context.beginPath();
+  context.moveTo(x0 + 1, yPrev);
+  for (var i=1; i<li.signal.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
+    var yCurr = scale(lill,lihh,height, liMarginTop,liMarginBottom, li.signal[i]);
     x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
     context.lineTo(x0 + 1, yCurr);
   }
   context.strokeStyle = 'red';
   context.fillStyle = 'red';
-  leftPos = marginLeft+5;
-  context.fillText(lowerIndicator.label, leftPos, liMarginTop + 5);
+  context.fillText('Signal', leftPos, liMarginTop + 5);
+  metrics = context.measureText('Signal');
+  leftPos += metrics.width + 5;
+  context.stroke();
+  // the histogram
+  context.beginPath();
+  var y0 = scale(lill,lihh,height, liMarginTop, liMarginBottom, 0)
+  for (var i=0; i<li.histogram.length && i<(width-marginLeft-marginRight-pixelsPerCandle)/pixelsPerCandle; i++){
+    var yCurr = scale(lill,lihh,height, liMarginTop,liMarginBottom, li.histogram[i]);
+    x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
+    context.moveTo(x0 + 1, y0);
+    context.lineTo(x0 + 1, yCurr);
+  }
+  context.strokeStyle = 'black';
+  context.fillStyle = 'black';
+  context.fillText('Histogram', leftPos, liMarginTop + 5);
   context.stroke();
   // END OF draw the lowerIndocator, MACD
   // the candles themselves
