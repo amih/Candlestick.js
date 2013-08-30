@@ -22,11 +22,13 @@ Roadmap:
  - [ ] cache data using indexedDB
  - [x] add labels for each top indicator, SMA(C,20) + line color
  - [ ] interactivity - allow scrolling by dragging sideways
+ - [ ] allow drawing of trendlines by clicking and dragging
+ - [ ] add mini language to define indicators and how to draw them
 
  Demo explanation
  ================
 
-The index.html file is really short, it contains in the HEAD section 3 javascript files,
+The minimal index.html file is really short, it contains in the HEAD section 3 javascript files,
 
 1. jQuery from a CDN
 2. the Candlestick.js file which is the main file for this project

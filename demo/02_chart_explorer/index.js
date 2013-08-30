@@ -29,9 +29,10 @@ var refreshChart = function(selector){
       , ['MACD', 12, 26, 9]
     ]
   };
-  $.get("weekly."+ticker+".txt",function(data) {
+  $.get("../../data/weekly."+ticker+".txt",function(data) {
     $('.history').html(addHistory(ticker));
-    Candlestick("myChart",data, options);
+    var chart = new Candlestick("myChart",data, options);
+    console.log(chart);
   }).fail(function() { alert('Ticker not found.'); });
   $(selector).select();
 }

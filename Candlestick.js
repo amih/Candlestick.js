@@ -80,7 +80,7 @@ window.Candlestick = function(canvasID, rawData, options){
       });
     }else if (indicator[0]=='MACD'){
       lowerIndicator.label = 'MACD({0},{1},{2})'.format(indicator[1], indicator[2], indicator[3]);
-      lowerIndicator.macd  = MACD(oCandle.c, indicator[1], indicator[2], indicator[3]);
+      lowerIndicator.data  = MACD(oCandle.c, indicator[1], indicator[2], indicator[3]);
       //console.log(lowerIndicator);
     }
   }
@@ -154,7 +154,7 @@ window.Candlestick = function(canvasID, rawData, options){
   var liMarginBottom = 10;
   context.fillRect  (marginLeft, liMarginTop, width-marginLeft-marginRight, marginBottom-20);
   // find out the highest high and lowest low of the MACD sub chart
-  var li = lowerIndicator.macd;
+  var li = lowerIndicator.data;
   var lihh = Max(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
   var lill = Min(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
   // the MACD line
@@ -232,6 +232,9 @@ window.Candlestick = function(canvasID, rawData, options){
     context.strokeStyle = 'black';
     context.stroke();
   }
+  upperIndicators.push(lowerIndicator);
+  this.data = [oCandle, upperIndicators];
+  // misc functions
   function scale(ll, hh, height, marginTop, marginBottom, y){
     return marginTop+(height-marginTop-marginBottom)*(1 - (y-ll)/(hh-ll));
   }
@@ -310,4 +313,4 @@ window.Candlestick = function(canvasID, rawData, options){
     var colors = ['coral','crimson','darkblue','chocolate','chartreuse','blueviolet','darksalmon'];
     return colors[j % colors.length];
   }
- }
+}
