@@ -4,6 +4,36 @@
  * Released under the MIT license
  */
 window.Candlestick = function(canvasID, rawData, options){
+  // utility finctions
+	var Max = function Max( array ){ return Math.max.apply( Math, array ); }
+	var Min = function Min( array ){ return Math.min.apply( Math, array ); }
+  this.Max = Max;
+  this.Min = Min;
+  function SMA( array, smaLength ){
+    array.reverse(); // easier on my limited brain to think of the array in the "proper" order
+    var sma = new Array();
+    for (var i=0; i<smaLength-1; i++){
+      sma[i] = NaN;
+    }
+    sma[smaLength-1] = array.slice(0,smaLength).reduce(function(a, b) { return a + b }) / smaLength;
+    for(var i=smaLength; i<array.length; i++){
+      sma[i] = sma[i-1] + (array[i] - array[i-smaLength]) / smaLength;
+    }
+    sma.reverse();// reverse back for main consumption
+    array.reverse();// reverse back
+    return sma;
+  }
+  this.drawLine = function(i0,v0,i1,v1,style){
+    var y0 = scale(ll,hh,height,marginTop,marginBottom,v0);
+    var y1 = scale(ll,hh,height,marginTop,marginBottom,v1);
+    var x0 = (width-marginRight) - (i0+1)*pixelsPerCandle + 1;
+    var x1 = (width-marginRight) - (i1+1)*pixelsPerCandle + 1;
+    context.moveTo(x0,y0);
+    context.lineTo(x1,y1);
+    context.strokeStyle = style;
+    context.stroke();
+  }
+  // END OF utility functions
   // add format to strings -- from http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format/4673436#4673436
   if (!String.prototype.format) {
     String.prototype.format = function() {
@@ -218,7 +248,7 @@ window.Candlestick = function(canvasID, rawData, options){
     if(o[i]>c[i]) {
       context.stroke();
     }
-
+    // draw the line around the candle
     context.beginPath();
     context.moveTo(x0 + 1, yl);//lower wick
     context.lineTo(x0 + 1, Math.max(yo,yc));
@@ -261,22 +291,6 @@ window.Candlestick = function(canvasID, rawData, options){
       v.push(Number((vv/ratio).toFixed(0)));
     }
     return { d:d, o:o, h:h, l:l, c:c, v:v };
-  }
-	function Max( array ){ return Math.max.apply( Math, array ); }
-	function Min( array ){ return Math.min.apply( Math, array ); }
-  function SMA( array, smaLength ){
-    array.reverse(); // easier on my limited brain to think of the array in the "proper" order
-    var sma = new Array();
-    for (var i=0; i<smaLength-1; i++){
-      sma[i] = NaN;
-    }
-    sma[smaLength-1] = array.slice(0,smaLength).reduce(function(a, b) { return a + b }) / smaLength;
-    for(var i=smaLength; i<array.length; i++){
-      sma[i] = sma[i-1] + (array[i] - array[i-smaLength]) / smaLength;
-    }
-    sma.reverse();// reverse back for main consumption
-    array.reverse();// reverse back
-    return sma;
   }
   function EMA( originalArray, emaLength ){
     var array = originalArray.slice().reverse(); // easier on my limited brain to think of the array in the "proper" order
