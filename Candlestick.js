@@ -5,10 +5,8 @@
  */
 window.Candlestick = function(canvasID, rawData, options){
   // utility finctions
-	var Max = function Max( array ){ return Math.max.apply( Math, array ); }
-	var Min = function Min( array ){ return Math.min.apply( Math, array ); }
-  this.Max = Max;
-  this.Min = Min;
+	this.Max = function Max( array ){ return Math.max.apply( Math, array ); }
+	this.Min = function Min( array ){ return Math.min.apply( Math, array ); }
   function SMA( array, smaLength ){
     array.reverse(); // easier on my limited brain to think of the array in the "proper" order
     var sma = new Array();
@@ -22,6 +20,37 @@ window.Candlestick = function(canvasID, rawData, options){
     sma.reverse();// reverse back for main consumption
     array.reverse();// reverse back
     return sma;
+  }
+  function EMA( originalArray, emaLength ){
+    var array = originalArray.slice().reverse(); // easier on my limited brain to think of the array in the "proper" order
+    // trim initial NaN values
+    var iPos = 0;
+    for(iPos=0; iPos<array.length && isNaN(array[iPos]); iPos++) {}
+    array = array.slice(iPos);// trim initial NaN values from array
+    var ema = new Array();
+    var k = 2/(emaLength+1);
+    for (var i=0; i<emaLength-1; i++){
+      ema[i] = NaN;
+    }
+    ema[emaLength-1] = array.slice(0,emaLength).reduce(function(a, b) { return a + b }) / emaLength;
+    for(var i=emaLength; i<array.length; i++){
+      ema[i] = array[i]*k + ema[i-1]*(1-k);
+    }
+    ema.reverse();// reverse back for main consumption
+    for (var i=0; i<iPos; i++){
+      ema.push(NaN);
+    }
+    return ema;
+  }
+  function MACD(array, i12, i26, i9){
+    var ema12 = EMA(oCandle.c, i12);
+    var ema26 = EMA(oCandle.c, i26);
+    var macd = [];
+    for(var i=0; i<ema12.length; i++){ macd.push(ema12[i]-ema26[i]); }
+    var signal = EMA(macd, i9);
+    var histogram = [];
+    for(var i=0; i<macd.length;  i++){ histogram.push(macd[i]-signal[i]); }
+    return { macd: macd, signal: signal, histogram: histogram };
   }
   this.drawLine = function(i0,v0,i1,v1,style){
     var y0 = scale(ll,hh,height,marginTop,marginBottom,v0);
@@ -70,8 +99,8 @@ window.Candlestick = function(canvasID, rawData, options){
     , marginBottom = 200
     , marginLeft = 5
     , marginRight = 23;
-  var hh = Max(h.slice(0,Math.min(h.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in candles that will be drawn and add margin
-  var ll = Min(l.slice(0,Math.min(l.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
+  var hh = this.Max(h.slice(0,Math.min(h.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in candles that will be drawn and add margin
+  var ll = this.Min(l.slice(0,Math.min(l.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
   // improve hh, ll
   var range = hh-ll;
   var step = 1;
@@ -131,7 +160,7 @@ window.Candlestick = function(canvasID, rawData, options){
   }
   context.strokeStyle = 'rgb(200,200,150)';
   context.stroke();
-  // X coordinate - month ticks (for weekly charts, for other ranges - TODO)
+  // X coordinate - month ticks (for weekly charts, for daily chart use 3 letter for each month)
   context.beginPath();
   var y0 = scale(ll,hh,height, marginTop,marginBottom, ll);
   var y1 = scale(ll,hh,height, marginTop,marginBottom, hh);
@@ -185,8 +214,8 @@ window.Candlestick = function(canvasID, rawData, options){
   context.fillRect  (marginLeft, liMarginTop, width-marginLeft-marginRight, marginBottom-20);
   // find out the highest high and lowest low of the MACD sub chart
   var li = lowerIndicator.data;
-  var lihh = Max(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
-  var lill = Min(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
+  var lihh = this.Max(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in MACD
+  var lill = this.Min(li.macd.slice(0,Math.min(li.macd.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
   // the MACD line
   var yPrev = scale(lill,lihh,height, liMarginTop, liMarginBottom, li.macd[0])
       , x0  = (width-marginRight) - pixelsPerCandle;
@@ -274,6 +303,7 @@ window.Candlestick = function(canvasID, rawData, options){
     allTextLines.pop();// remove last element which is empty due to the last /n at the end of the last line
     allTextLines.shift();// remove first line - the headers of the array
     var d=[], o=[], h=[], l=[], c=[], v=[];
+    if(typeof options.adjust=='undefined'){ options.adjust = 0; }
     for(var i=0; i<allTextLines.length; i++){
       var entries = allTextLines[i].split(',');
       d.push(new Date(entries[0]));
@@ -283,7 +313,14 @@ window.Candlestick = function(canvasID, rawData, options){
         , cc = entries[4]
         , vv = entries[5]
         , adjC = entries[6];
-      var ratio = adjC / cc;
+      var ratio;
+      if(options.adjust==0){
+        ratio = 1;
+      }else if(options.adjust==1){
+        ratio = adjC / cc;
+      }else if(options.adjust==2){
+        ratio = adjC / cc;
+      }
       o.push(Number((oo*ratio).toFixed(2)));
       h.push(Number((hh*ratio).toFixed(2)));
       l.push(Number((ll*ratio).toFixed(2)));
@@ -291,37 +328,6 @@ window.Candlestick = function(canvasID, rawData, options){
       v.push(Number((vv/ratio).toFixed(0)));
     }
     return { d:d, o:o, h:h, l:l, c:c, v:v };
-  }
-  function EMA( originalArray, emaLength ){
-    var array = originalArray.slice().reverse(); // easier on my limited brain to think of the array in the "proper" order
-    // trim initial NaN values
-    var iPos = 0;
-    for(iPos=0; iPos<array.length && isNaN(array[iPos]); iPos++) {}
-    array = array.slice(iPos);// trim initial NaN values from array
-    var ema = new Array();
-    var k = 2/(emaLength+1);
-    for (var i=0; i<emaLength-1; i++){
-      ema[i] = NaN;
-    }
-    ema[emaLength-1] = array.slice(0,emaLength).reduce(function(a, b) { return a + b }) / emaLength;
-    for(var i=emaLength; i<array.length; i++){
-      ema[i] = array[i]*k + ema[i-1]*(1-k);
-    }
-    ema.reverse();// reverse back for main consumption
-    for (var i=0; i<iPos; i++){
-      ema.push(NaN);
-    }
-    return ema;
-  }
-  function MACD(array, i12, i26, i9){
-    var ema12 = EMA(oCandle.c, i12);
-    var ema26 = EMA(oCandle.c, i26);
-    var macd = [];
-    for(var i=0; i<ema12.length; i++){ macd.push(ema12[i]-ema26[i]); }
-    var signal = EMA(macd, i9);
-    var histogram = [];
-    for(var i=0; i<macd.length;  i++){ histogram.push(macd[i]-signal[i]); }
-    return { macd: macd, signal: signal, histogram: histogram };
   }
   function getColor(j){
     var colors = ['coral','crimson','darkblue','chocolate','chartreuse','blueviolet','darksalmon'];

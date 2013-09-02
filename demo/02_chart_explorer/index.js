@@ -23,6 +23,7 @@ var refreshChart = function(selector){
   var ticker = $(selector).val().toUpperCase();
   var options = {
     title: ticker+' weekly'
+    , adjust: 1
     , indicators : [
         ['EMA', 'c', 26]
       , ['SMA', 'c', 200]
@@ -33,7 +34,14 @@ var refreshChart = function(selector){
     $('.history').html(addHistory(ticker));
     var chart = new Candlestick("myChart",data, options);
     console.log(chart);
-  }).fail(function() { alert('Ticker not found.'); });
+  }).fail(function() { 
+    $.get("../../data/daily."+ticker+".txt",function(data) {
+      $('.history').html(addHistory(ticker));
+      options.title = ticker+' daily';
+      var chart = new Candlestick("myChart",data, options);
+      console.log(chart);
+    }).fail(function() { alert('Ticker not found.'); });
+  });
   $(selector).select();
 }
 var addHistory = function(ticker){

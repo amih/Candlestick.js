@@ -6,6 +6,7 @@
     $(function() {
       var options = {
         title: 'AAPL weekly'
+        , adjust: 0
         , indicators : [
             ['EMA', 'c', 26]
           , ['SMA', 'c', 200]
@@ -13,8 +14,9 @@
         ]
       };
       $.get("../../data/weekly.AAPL.txt",function(data) {
-        var chart = new Candlestick("myChart",data, options);
-        console.log(chart);
+        window.chart = new Candlestick("myChart",data, options);
+        console.log(window.chart);
+        console.log('You can inspect and manipulate the window.chart object in the console, have fun! @amiheines');
       });
     });
   </script>

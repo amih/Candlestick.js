@@ -54,4 +54,7 @@ the parameters:
 - data    : the data in the finance.yahoo.com format, e.g. http://ichart.finance.yahoo.com/table.csv?s=AAPL&a=04&b=7&c=2013&d=07&e=27&f=2013&g=w&ignore=.csv
 - options : an object with a title element and an indicators sub-object.
 
+Data for the testing is for AAPL, MA and PRAA symbols.
+A live demo is at smallestbusiness.com/Candlestick.js.demo_page/
 
+Questions? Comments? @amiheines
