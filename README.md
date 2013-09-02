@@ -12,6 +12,8 @@ Tested on Chrome only!
 
 ![alt tag](https://raw.github.com/amih/Candlestick.js/master/data/Candlestick_js_screenshot.png)
 
+Live demo at: http://chartly.com/Candlestick.js/
+
 Assumptions
 ===========
 Data is in the same format as in finance.yahoo.com historical prices, see for example: http://finance.yahoo.com/q/hp?s=AAPL+Historical+Prices
