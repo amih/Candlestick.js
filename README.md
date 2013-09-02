@@ -12,7 +12,10 @@ Tested on Chrome only!
 
 ![alt tag](https://raw.github.com/amih/Candlestick.js/master/data/Candlestick_js_screenshot.png)
 
-Live demo at: http://chartly.com/Candlestick.js/
+Live demo:
+http://chartly.com/Candlestick.js/demo/01_minimal
+http://chartly.com/Candlestick.js/demo/02_chart_explorer
+http://chartly.com/Candlestick.js/demo/04_crossover
 
 Assumptions
 ===========
