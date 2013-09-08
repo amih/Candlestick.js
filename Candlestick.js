@@ -111,6 +111,8 @@ window.Candlestick = function(canvasID, rawData, options){
       step +=2;
     }else if (step<30){
       step +=5;
+    }else{
+      step +=10;
     }
     //console.log('    step [1] '+step);
   }
@@ -302,6 +304,7 @@ window.Candlestick = function(canvasID, rawData, options){
     var allTextLines = rawData.split(/\r\n|\n/);
     allTextLines.pop();// remove last element which is empty due to the last /n at the end of the last line
     allTextLines.shift();// remove first line - the headers of the array
+    allTextLines = allTextLines.slice(options.offset);
     var d=[], o=[], h=[], l=[], c=[], v=[];
     if(typeof options.adjust=='undefined'){ options.adjust = 0; }
     for(var i=0; i<allTextLines.length; i++){

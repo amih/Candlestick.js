@@ -2,9 +2,17 @@
 // the value is an array of the parameters used to define the indicaotr
 $(function() {
   $('#ticker').focus();
-  refreshChart('#ticker');
+  $( "#spinner" ).spinner({ 
+    min: 0,
+    spin: function( event, ui ) {
+      var iOffset = $( "#spinner" ).spinner( "value" );
+      refreshChart('#ticker', iOffset);
+    }
+  });
+  refreshChart('#ticker', 0);
   $('#ticker').bind('keypress', function(e) {
     if(e.which==13){
+      $( "#spinner" ).spinner( "value", 0 );
       refreshChart('#ticker');
     }
   });
@@ -12,20 +20,23 @@ $(function() {
     $('#ticker').select();
   });
   $('#go_button').click(function(){
+    $( "#spinner" ).spinner( "value", 0 );
     refreshChart('#ticker');
   });
   $('.history').on('click', 'li', function(){
     $('#ticker').val($(this).text());
+    $( "#spinner" ).spinner( "value", 0 );
     refreshChart('#ticker');
   });
 });
-var refreshChart = function(selector){
+var refreshChart = function(selector, offset){
   var ticker = $(selector).val().toUpperCase();
   var options = {
     title: ticker+' weekly'
+    , offset : offset
     , indicators : [
         ['EMA', 'c', 26]
-      , ['SMA', 'c', 200]
+      , ['SMA', 'c', 40]
       , ['MACD', 12, 26, 9]
     ]
   };
@@ -35,7 +46,7 @@ var refreshChart = function(selector){
     console.log(chart);
     findExtremum(chart);
   }).fail(function() { alert('Ticker not found.'); });
-  $(selector).select();
+  //$(selector).select();//conflicts with spinner
 }
 var addHistory = function(ticker){
  if (typeof addHistory.tickers == 'undefined' ) {
@@ -60,18 +71,19 @@ var findExtremum = function(chart){
   }
   for(var i=1; i<l.length-1; i++){
     if (h[i]>chart.Max(h.slice(i+1, Math.min(h.length-1,i+searchLengthLeft+1))) && h[i]>chart.Max(h.slice(Math.max(0,i-searchLengthLeft), i))){
-      console.log('found max at {0}'.format(i));
+      //console.log('found max at {0}'.format(i));
       arrMax.push(i);
     }
   }
   for(var i=1; i<arrMin.length; i++){
-    if(l[arrMin[i-1]]<l[arrMin[i]] && macd[arrMin[i-1]]>macd[arrMin[i]]){
-      console.log('found double bottom divergence at {0}'.format(arrMin[i-1]));
+    if(l[arrMin[i-1]]<1.04*l[arrMin[i]] && macd[arrMin[i-1]]>macd[arrMin[i]]){
+      console.log('found double bottom divergence at {0}, {1}'.format(arrMin[i-1], arrMin[i]));
+      chart.drawLine(arrMin[i-1],l[arrMin[i-1]]*.99,arrMin[i-1]+4,l[arrMin[i-1]]*.8,'blueviolet');
     }
   }
-  for(var i=1; i<arrMax.length; i++){
-    if(h[arrMax[i-1]]>h[arrMax[i]] && macd[arrMax[i-1]]<macd[arrMax[i]]){
-      console.log('found double top divergence at {0}'.format(arrMax[i-1]));
-    }
-  }
+  //for(var i=1; i<arrMax.length; i++){
+  //  if(h[arrMax[i-1]]>h[arrMax[i]] && macd[arrMax[i-1]]<macd[arrMax[i]]){
+  //    console.log('found double top divergence at {0}'.format(arrMax[i-1]));
+  //  }
+  //}
 }
