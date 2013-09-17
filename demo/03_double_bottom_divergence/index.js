@@ -35,10 +35,13 @@ var refreshChart = function(selector, offset){
     title: ticker+' weekly'
     , offset : offset
     , indicators : [
-        ['EMA', 'c', 26]
-      , ['SMA', 'c', 40]
-      , ['MACD', 12, 26, 9]
+      ['MACD', 12, 26, 9]
     ]
+    //, indicators : [
+    //    ['EMA', 'c', 26]
+    //  , ['SMA', 'c', 40]
+    //  , ['MACD', 12, 26, 9]
+    //]
   };
   $.get("../../data/weekly."+ticker+".txt",function(data) {
     $('.history').html(addHistory(ticker));

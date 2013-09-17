@@ -228,8 +228,8 @@ window.Candlestick = function(canvasID, rawData, options){
     x0 = (width-marginRight) - (i+1)*pixelsPerCandle;
     context.lineTo(x0 + 1, yCurr);
   }
-  context.strokeStyle = 'blue';
-  context.fillStyle = 'blue';
+  context.strokeStyle = 'black';
+  context.fillStyle = 'black';
   leftPos = marginLeft+5;
   context.fillText(lowerIndicator.label, leftPos, liMarginTop + 5);
   metrics = context.measureText(lowerIndicator.label);
@@ -260,8 +260,8 @@ window.Candlestick = function(canvasID, rawData, options){
     context.moveTo(x0 + 1, y0);
     context.lineTo(x0 + 1, yCurr);
   }
-  context.strokeStyle = 'black';
-  context.fillStyle = 'black';
+  context.strokeStyle = 'blue';
+  context.fillStyle = 'blue';
   context.fillText('Histogram', leftPos, liMarginTop + 5);
   context.stroke();
   // END OF draw the lowerIndocator, MACD
