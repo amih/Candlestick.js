@@ -12,5 +12,21 @@ Ticker:
 <input id="ticker" type="text" name="ticker" value="AAPL"><a id="go_button" href="#" class="button">Go!</a><input id="spinner"><br/>
 <div class='history'>&nbsp; </div>
 <canvas id="myChart" width="660" height="500"></canvas>
+<br />
+<textarea id="code" rows="8" cols="70">
+var C = window.Candlestick.chart;
+//C.drawLine(  9, 390, 12, 360, 'green', 4 );
+//C.drawLine( 19, 390, 22, 360, 'gray' , 6 );
+var c   = C.data[0].c;
+var d   = C.data[0].d;
+var ema = C.data[1][0].arr;//EMA(c,26)
+var arrCrossUp = [];
+for(var i=1; i<c.length-1; i++){
+  if (c[i]<ema[i] && c[i-1]>ema[i-1]){
+    console.log('close crosses above EMA(c,26) at {0}'.format(d[i]));
+    C.drawLine(i-1,c[i-1]*1.01,i+4,c[i-1]*1.2,'blueviolet', 4);
+  }
+}
+</textarea><a id="enter_button" href="#" class="button">Enter</a>
 </body>
 </html>

@@ -23,6 +23,9 @@ $(function() {
     $( "#spinner" ).spinner( "value", 0 );
     refreshChart('#ticker');
   });
+  $('#enter_button').click(function(){
+    eval($('#code').val());
+  });
   $('.history').on('click', 'li', function(){
     $('#ticker').val($(this).text());
     $( "#spinner" ).spinner( "value", 0 );
@@ -34,20 +37,22 @@ var refreshChart = function(selector, offset){
   var options = {
     title: ticker+' weekly'
     , offset : offset
-    , indicators : [
-      ['MACD', 12, 26, 9]
-    ]
     //, indicators : [
-    //    ['EMA', 'c', 26]
-    //  , ['SMA', 'c', 40]
-    //  , ['MACD', 12, 26, 9]
+    //  ['MACD', 12, 26, 9]
     //]
+    , indicators : [
+        ['EMA', 'c', 26]
+      , ['SMA', 'c', 40]
+      , ['MACD', 12, 26, 9]
+    ]
   };
   $.get("../../data/weekly."+ticker+".txt",function(data) {
     $('.history').html(addHistory(ticker));
     var chart = new Candlestick("myChart",data, options);
+    window.Candlestick.chart = chart;
     console.log(chart);
     findExtremum(chart);
+    eval($('#code').val());
   }).fail(function() { alert('Ticker not found.'); });
   //$(selector).select();//conflicts with spinner
 }
@@ -81,12 +86,13 @@ var findExtremum = function(chart){
   for(var i=1; i<arrMin.length; i++){
     if(l[arrMin[i-1]]<1.04*l[arrMin[i]] && macd[arrMin[i-1]]>macd[arrMin[i]]){
       console.log('found double bottom divergence at {0}, {1}'.format(arrMin[i-1], arrMin[i]));
-      chart.drawLine(arrMin[i-1],l[arrMin[i-1]]*.99,arrMin[i-1]+4,l[arrMin[i-1]]*.8,'blueviolet');
+      chart.drawLine(arrMin[i-1],l[arrMin[i-1]]*.99,arrMin[i-1]+4,l[arrMin[i-1]]*.8,'green');
     }
   }
-  //for(var i=1; i<arrMax.length; i++){
-  //  if(h[arrMax[i-1]]>h[arrMax[i]] && macd[arrMax[i-1]]<macd[arrMax[i]]){
-  //    console.log('found double top divergence at {0}'.format(arrMax[i-1]));
-  //  }
-  //}
+  for(var i=1; i<arrMax.length; i++){
+    if(h[arrMax[i-1]]>h[arrMax[i]] && macd[arrMax[i-1]]<macd[arrMax[i]]){
+      console.log('found double top divergence at {0}'.format(arrMax[i-1]));
+      chart.drawLine(arrMax[i-1],h[arrMax[i-1]]*1.003,arrMax[i-1]+4,h[arrMax[i-1]]*1.2,'red');
+    }
+  }
 }

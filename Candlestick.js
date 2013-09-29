@@ -52,14 +52,16 @@ window.Candlestick = function(canvasID, rawData, options){
     for(var i=0; i<macd.length;  i++){ histogram.push(macd[i]-signal[i]); }
     return { macd: macd, signal: signal, histogram: histogram };
   }
-  this.drawLine = function(i0,v0,i1,v1,style){
+  this.drawLine = function(i0,v0,i1,v1,style,linewidth){
     var y0 = scale(ll,hh,height,marginTop,marginBottom,v0);
     var y1 = scale(ll,hh,height,marginTop,marginBottom,v1);
     var x0 = (width-marginRight) - (i0+1)*pixelsPerCandle + 1;
     var x1 = (width-marginRight) - (i1+1)*pixelsPerCandle + 1;
+    context.beginPath();
     context.moveTo(x0,y0);
     context.lineTo(x1,y1);
     context.strokeStyle = style;
+    context.lineWidth = linewidth;
     context.stroke();
   }
   // END OF utility functions
